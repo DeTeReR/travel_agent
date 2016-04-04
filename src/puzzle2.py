@@ -1,30 +1,71 @@
 import logging
 from collections import namedtuple, OrderedDict
-from src.die import DieOnBoard
-from src.puzzle import MOVES
+from copy import copy
+
+from die import DieOnBoard
+from functools32 import functools32
+from puzzle import MOVES
 
 logger = logging.getLogger(__name__)
 
-def new_solve(game_static, game_state):
+
+def solve(game_static, game_state):
 	if game_state.die_location == game_static.end_location:
-		return game_state
+		return copy(game_state)
 	next_state_modifiers = game_static.next_state_modifiers(game_state)
 	if not next_state_modifiers:
 		return None
 	solution = None
 	for modifier in next_state_modifiers:
 		game_state.modify(modifier)
-		solution = new_solve(game_static, game_state) if solution is None else max(solution, new_solve(game_static, game_state))
-		game_state.unmod()
+		solution = solve(game_static, game_state) if solution is None else max(solution,
+		                                                                       solve(game_static, game_state))
+		game_state.unmod(modifier)
 	return solution
 
 
-class GameState(namedtuple('GameState', ['die_north_index', 'die_top_index', 'die_location', 'visited', 'die_face_values'])):
-	def modify(self, modifier):
-		pass
+class GameStateTuple(object):
+	def __init__(self, die_north_index=None, die_top_index=None, die_location=None, visited=None, die_face_values=None):
+		self.die_north_index = die_north_index
+		self.die_top_index = die_top_index
+		self.die_location = die_location
+		self.visited = visited
+		self.die_face_values = die_face_values
 
-	def unmod(self):
-		pass
+
+class GameState(GameStateTuple):
+	MAIN_STATE_NAMES = ('die_north_index', 'die_top_index', 'die_location')
+	def modify(self, modifier):
+		for attribute_name in self.MAIN_STATE_NAMES:
+			getattr(self, attribute_name).append(getattr(modifier, attribute_name))
+		row_col, die_face_index = modifier.visited
+		self.visited[row_col] = die_face_index
+		if modifier.die_face_values:
+			face_index, face_value = modifier.die_face_values
+			self.die_face_values[face_index] = face_value
+
+	def unmod(self, modifier):
+		for attribute_name in self.MAIN_STATE_NAMES:
+			getattr(self, attribute_name).pop()
+		self.visited.popitem()
+		if modifier.die_face_values:
+			self.die_face_values.popitem()
+
+	def __cmp__(self, other):
+		return cmp(self.score(), other.score())
+
+	@functools32.lru_cache(1)
+	def score(self):
+		product = 1
+		for die_face_index in self.visited.values():
+			space_value = self.die_face_values.get(die_face_index, 0)
+			if space_value == 0:
+				self.die_face_values[die_face_index] = space_value = 9
+			product *= space_value
+		return product
+
+class GameStateModifier(GameStateTuple):
+	pass
 
 
 '''
@@ -57,21 +98,37 @@ class GameStatic(object):
 	def __init__(self, board_values):
 		self.board = board_values
 		self._die = DieOnBoard()
-		self.end_location = len(board_values)-1, len(board_values[0])-1
+		self.end_location = len(board_values) - 1, len(board_values[0]) - 1
 
 	def next_state_modifiers(self, game_state):
-		row, col = game_state.die_location
+		row, col = game_state.die_location[-1]
 		modifiers = []
 		for move, (row_move, col_move) in MOVES.iteritems():
 			new_row = row + row_move
 			new_col = col + col_move
-			if not (self.end_location[0] >= new_row >= 0) and   (self.end_location[1] >= new_col >= 0):
+			if not ((self.end_location[0] >= new_row >= 0) and (self.end_location[1] >= new_col >= 0)):
 				continue
 			if (new_row, new_col) in game_state.visited:
 				continue
 			board_value = self.board[new_row][new_col]
-			die_value = self._die.value_from_move(move, top_index=game_state.die_top_index, north_index=game_state.die_north_index)
-			
+			die_top_index, die_north_index = self._die.result_of_move(
+				move,
+				top_index=game_state.die_top_index[-1],
+				north_index=game_state.die_north_index[-1])
+			die_top_value = game_state.die_face_values.get(die_top_index, 0)
+			if board_value is 0 or die_top_value == board_value:
+				modifiers.append(GameStateModifier(die_north_index=die_north_index,
+				                                   die_top_index=die_top_index,
+				                                   die_location=(new_row, new_col),
+				                                   visited=((new_row, new_col), die_top_index)))
+			elif die_top_value is 0:
+				modifiers.append(GameStateModifier(die_north_index=die_north_index,
+				                                   die_top_index=die_top_index,
+				                                   die_location=(new_row, new_col),
+				                                   visited=((new_row, new_col), die_top_index),
+				                                   die_face_values=(die_top_index, board_value)))
+		return modifiers
+
 
 def main():
 	logger.warning('Starting.')
@@ -104,14 +161,15 @@ def main():
 		[0, 5, 0, 2, 3],
 		[5, 0, 0, 4, 1],
 	])
-	static = practise_static
-	initial_state = GameState(die_north_index=2,
-							  die_top_index=1,
-							  die_location=(0,0),
-							  visited=OrderedDict([((0, 0), 1)]),
-							  die_face_values=OrderedDict([(1, static.board[0][0])]))
-	result = new_solve(static, initial_state)
+	static = example_static
+	initial_state = GameState(die_north_index=[2],
+	                          die_top_index=[1],
+	                          die_location=[(0, 0)],
+	                          visited=OrderedDict([((0, 0), 1)]),
+	                          die_face_values=OrderedDict([(1, static.board[0][0])]))
+	result = solve(static, initial_state)
 	logger.warning('Solved: %s', result)
+
 
 if __name__ == '__main__':
 	logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
