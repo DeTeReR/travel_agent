@@ -1,6 +1,6 @@
 import logging
 from collections import namedtuple, OrderedDict
-from copy import copy
+from copy import copy, deepcopy
 
 from die import DieOnBoard
 from functools32 import functools32
@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 def solve(game_static, game_state):
-	if game_state.die_location == game_static.end_location:
-		return copy(game_state)
+	if game_state.die_location[-1] == game_static.end_location:
+		return deepcopy(game_state)
 	next_state_modifiers = game_static.next_state_modifiers(game_state)
 	if not next_state_modifiers:
 		return None
@@ -52,6 +52,8 @@ class GameState(GameStateTuple):
 			self.die_face_values.popitem()
 
 	def __cmp__(self, other):
+		if other is None:
+			return 1
 		return cmp(self.score(), other.score())
 
 	@functools32.lru_cache(1)
@@ -161,14 +163,14 @@ def main():
 		[0, 5, 0, 2, 3],
 		[5, 0, 0, 4, 1],
 	])
-	static = example_static
+	static = big_static
 	initial_state = GameState(die_north_index=[2],
 	                          die_top_index=[1],
 	                          die_location=[(0, 0)],
 	                          visited=OrderedDict([((0, 0), 1)]),
 	                          die_face_values=OrderedDict([(1, static.board[0][0])]))
 	result = solve(static, initial_state)
-	logger.warning('Solved: %s', result)
+	logger.warning('Solved: score%s\n%s', result.score(), result)
 
 
 if __name__ == '__main__':
