@@ -69,7 +69,9 @@ class GameStatic(object):
 				continue
 			if (new_row, new_col) in game_state.visited:
 				continue
-			board_value = 
+			board_value = self.board[new_row][new_col]
+			die_value = self._die.value_from_move(move, top_index=game_state.die_top_index, north_index=game_state.die_north_index)
+			
 
 def main():
 	logger.warning('Starting.')
