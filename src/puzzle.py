@@ -15,6 +15,7 @@ MOVES = {
 }
 SPACE_VALUES = set(range(1, 10))
 
+
 class State(object):
 	def __init__(self, board_values):
 		self.board = Board(board_values)
@@ -86,7 +87,7 @@ class State(object):
 		return self._die_location == self.board.limit()
 
 
-@functools32.lru_cache(None)
+#@functools32.lru_cache(None)
 def solve(state):
 	if state.finished():
 		return state
