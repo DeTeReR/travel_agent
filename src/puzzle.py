@@ -1,9 +1,11 @@
 from copy import deepcopy
-
+import logging
 import functools32 as functools32
 
 from board import Board, BoardError
-from src.die import DieOnBoard
+from die import DieOnBoard
+
+logger = logging.getLogger(__name__)
 
 MOVES = {
 	'north': 	(1, 0),
@@ -54,7 +56,7 @@ class State(object):
 		if value:#
 			state.die.set_top(value)
 			try:
-				state.board.set_value(value, *self._die_location)
+				state.board.set_value(value, *state._die_location)
 			except BoardError:
 				pass
 		return state
@@ -90,9 +92,11 @@ def solve(state):
 		return state
 	next_states = state.next_states()
 	if not next_states:
-		print state
 		return None
-	return max(solve(s) for s in next_states)
+	solutions = [s for s in (solve(s) for s in next_states) if s is not None]
+	if not solutions:
+		return None
+	return max(solutions)
 
 
 def main():
@@ -103,7 +107,30 @@ def main():
 		[9, 5, 7, 2, 3],
 		[5, 8, 3, 4, 1],
 	])
-	print solve(initial_state)
+	big_state = State([
+		[1, 5, 5, 5, 6, 1, 1, 4, 1, 3, 7, 5],
+		[3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+		[4, 0, 6, 4, 1, 8, 1, 4, 2, 1, 0, 3],
+		[7, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 2],
+		[1, 0, 1, 0, 6, 1, 6, 2, 0, 2, 0, 1],
+		[8, 0, 4, 0, 1, 0, 0, 8, 0, 3, 0, 5],
+		[4, 0, 2, 0, 5, 0, 0, 3, 0, 5, 0, 2],
+		[8, 0, 5, 0, 1, 1, 2, 3, 0, 4, 0, 6],
+		[6, 1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 6],
+		[3, 0, 6, 3, 6, 5, 4, 3, 4, 5, 0, 1],
+		[6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3],
+		[2, 1, 6, 6, 4, 5, 2, 1, 1, 1, 7, 1]
+	])
+	practise_state = State([
+		[3, 4, 1, 7, 5],
+		[1, 2, 4, 3, 5],
+		[2, 4, 3, 6, 2],
+		[9, 5, 7, 2, 3],
+		[5, 0, 0, 4, 1],
+	])
+	logger.warning('Starting.')
+	logger.warning('Solved: %s', solve(big_state))
 
 if __name__ == '__main__':
+	logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 	main()

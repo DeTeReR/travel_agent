@@ -27,7 +27,7 @@ class Board(object):
 		for row in input_values:
 			self.spaces.append([])
 			for value in row:
-				self.spaces[-1].append(Space(value))
+				self.spaces[-1].append(Space(value or None))
 
 	def __str__(self):
 		return '\n'.join(str(row) for row in self.spaces)
@@ -44,7 +44,7 @@ class Board(object):
 				yield space
 
 	def limit(self):
-		return len(self.spaces), len(self.spaces[0])
+		return len(self.spaces) - 1, len(self.spaces[0]) - 1
 
 	def can_visit(self, row, col):
 		if row < 0 or col < 0:
