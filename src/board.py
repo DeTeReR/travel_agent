@@ -44,9 +44,11 @@ class Board(object):
 		return len(self.spaces), len(self.spaces[0])
 
 	def can_visit(self, row, col):
+		if row < 0 or col < 0:
+			return False
 		try:
 			space = self.spaces[row][col]
-			return space.visited
+			return not space.visited
 		except IndexError:
 			return False
 

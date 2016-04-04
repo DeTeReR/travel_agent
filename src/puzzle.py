@@ -13,24 +13,37 @@ class Face(object):
 		self.neighbours[neighbour_index] = other
 		other.neighbours[(neighbour_index + 2) % 4] = self
 
+	def __str__(self):
+		return '|%s|' % self.value
+
 class DieOnBoard(object):
+	NEW_TOP = {'north': 2, 'south': 0, 'east': 3, 'west': 1}
+	NEW_NORTH = {'north': 2, 'south': 0}
 	def __init__(self, top_value=None):
 		# 1 indexed so that this matches a D6.
 		faces = [None] + [Face()] * 6
-
-		for i, n in enumerate([4, 5, 3, 2]):
+		side_faces = [4, 5, 3, 2]
+		for i, n in enumerate(side_faces):
 			faces[1].set_neighbour(faces[n], i)
 			faces[6].set_neighbour(faces[n], (i + 2) % 4)
+			faces[n].set_neighbour(faces[side_faces[(i + 1) % 4]], 1)
+		self._top = faces[1]
+		self._north = faces[4]
 
-		self.top = top_value
-		self.east = self.west = self.north = self.south = self._bottom = None
+	def top_if_move(self, direction):
+		return self._top.neighbours[self.NEW_TOP[direction]].value
 
 	def move(self, direction):
-		if direction == 'north':
+		self._top = self._top.neighbours[self.NEW_TOP[direction]]
+		self._north = self._north.neighbours[self.NEW_NORTH[direction]] if direction in self.NEW_NORTH else self._north
 
+	def set_top(self, value):
+		ret = True if self._top.value is None else False
+		self._top.value = value
+		return ret
 
 	def __str__(self):
-		return ', '.join([str(x) for x in self.top, self.north, self.east, self.south, self.west, self._bottom])
+		return 'Die(top:%s, rest:%s,%s,%s,%s' % ((self._top) + (self._top.neighbours))
 
 MOVES = {
 	'north': 	(1, 0),
@@ -45,7 +58,6 @@ class State(object):
 		self.board = Board(board_values)
 		self._die_location = (0, 0)
 		self.die = DieOnBoard(top_value=self.board.space(*self._die_location).value)
-
 
 	def __str__(self):
 		return 'Die:%s\nScore:%s\nBoard:%s' % (str(self.die), self.score(), str(self.board))
@@ -63,7 +75,7 @@ class State(object):
 				continue
 
 			space = self.board.space(new_row, new_col)
-			die_face = getattr(self.die, move)
+			die_face = self.die.top_if_move(move)
 			if space.value is None:
 				if die_face is None:
 					states.extend([self.new_state(move, value) for value in SPACE_VALUES])
@@ -79,7 +91,7 @@ class State(object):
 		state = deepcopy(self)
 		state.move(move)
 		if value:
-			self.die.top = self.die.top if self.die.top is not None else value
+			self.die.set_top(value)
 			try:
 				self.board.set_value(value, *self._die_location)
 			except BoardError:
@@ -108,7 +120,7 @@ class State(object):
 		return product
 
 	def finished(self):
-		return self.board.die_location == self.board.limit()
+		return self._die_location == self.board.limit()
 
 
 @functools32.lru_cache(None)
