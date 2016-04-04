@@ -7,6 +7,9 @@ class Space(object):
 	def __str__(self):
 		return '%s%s' % (self.value, '_' if self.visited else ' ')
 
+	def __repr__(self):
+		return str(self)
+
 	def __eq__(self, other):
 		return self.value == other.value and self.visited == other.visited
 
@@ -27,7 +30,7 @@ class Board(object):
 				self.spaces[-1].append(Space(value))
 
 	def __str__(self):
-		return '\n'.join(row for row in self.spaces)
+		return '\n'.join(str(row) for row in self.spaces)
 
 	def __eq__(self, other):
 		return all(m == o for m, o in zip(self.all_spaces(), other.all_spaces()))

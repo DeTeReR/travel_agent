@@ -35,7 +35,7 @@ class DieOnBoard(object):
 		roll_dir, self._top_index = self._roll_dir_and_new_top_index(direction)
 		move_north_marker = direction in {'north', 'south'}
 		if move_north_marker:
-			self._north_index = self.DIE_FACE_MAPPINGS[self._north_index][roll_dir]
+			self._north_index = self.DIE_FACE_MAPPINGS[self._north_index][(roll_dir + 2) % 4]
 
 	def _roll_dir_and_new_top_index(self, direction):
 		north_from_top_index = self.DIE_FACE_MAPPINGS[self._top_index].index(self._north_index)
@@ -51,11 +51,16 @@ class DieOnBoard(object):
 	def top(self):
 		return self._faces[self._top_index]
 
+	def north(self):
+		return self._faces[self._north_index]
+
 	def __str__(self):
 		neighbours = self.DIE_FACE_MAPPINGS[self._top_index]
-		return 'Die(top:%s, neighbours:%s,%s,%s,%s)' % \
+		bottom = self._faces[list(self.DIE_FACE_MAPPINGS.viewkeys() - set(neighbours) - {self._top_index})[-1]]
+		return 'Die(top:%s, neighbours:%s,%s,%s,%s, bottom:%s)' % \
 			   (self._faces[self._top_index],
-				neighbours[0],
-				neighbours[1],
-				neighbours[2],
-				neighbours[3],)
+				self._faces[neighbours[0]],
+				self._faces[neighbours[1]],
+				self._faces[neighbours[2]],
+				self._faces[neighbours[3]],
+				bottom)

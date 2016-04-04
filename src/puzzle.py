@@ -21,7 +21,7 @@ class State(object):
 		self.die = DieOnBoard(top_value=self.board.space(*self._die_location).value)
 
 	def __str__(self):
-		return 'Die:%s\nScore:%s\nBoard:%s' % (str(self.die), self.score(), str(self.board))
+		return 'Die:%s\nScore:%s\nBoard:\n%s' % (str(self.die), self.score(), str(self.board))
 
 	def __cmp__(self, other):
 		return cmp(self.score(), other.score())
@@ -90,6 +90,7 @@ def solve(state):
 		return state
 	next_states = state.next_states()
 	if not next_states:
+		print state
 		return None
 	return max(solve(s) for s in next_states)
 

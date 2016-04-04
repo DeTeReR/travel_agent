@@ -16,6 +16,14 @@ class TestDieOnBoard(TestCase):
 				self._die.move(direction)
 			self.assertEqual(self._die.top(), 1)
 
+	def test_roll_around(self):
+		print self._die.top(), self._die.north(), '\n'
+		for i in range(3):
+			for direction in ('east', 'south', 'west', 'north'):
+				self._die.move(direction)
+				print direction, self._die.top(), self._die.north(), '\n'
+		self.assertEqual(self._die.top(), 1)
+
 	# def test_move(self):
 	# 	self.fail()
 	#
