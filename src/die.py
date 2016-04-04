@@ -32,10 +32,14 @@ class DieOnBoard(object):
 		return self._faces[new_top_index]
 
 	def move(self, direction):
-		roll_dir, self._top_index = self._roll_dir_and_new_top_index(direction)
-		move_north_marker = direction in {'north', 'south'}
-		if move_north_marker:
-			self._north_index = self.DIE_FACE_MAPPINGS[self._north_index][(roll_dir + 2) % 4]
+		roll_dir, new_top_index = self._roll_dir_and_new_top_index(direction)
+		if direction == 'north':
+			self._north_index = self._top_index
+		elif direction == 'south':
+			top_from_north_index = self.DIE_FACE_MAPPINGS[self._north_index].index(self._top_index)
+			self._north_index = self.DIE_FACE_MAPPINGS[self._north_index][(top_from_north_index+ 2) % 4]
+		self._top_index = new_top_index
+
 
 	def _roll_dir_and_new_top_index(self, direction):
 		north_from_top_index = self.DIE_FACE_MAPPINGS[self._top_index].index(self._north_index)

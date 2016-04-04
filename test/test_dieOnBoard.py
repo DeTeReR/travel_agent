@@ -24,11 +24,5 @@ class TestDieOnBoard(TestCase):
 				print direction, self._die.top(), self._die.north(), '\n'
 		self.assertEqual(self._die.top(), 1)
 
-	# def test_move(self):
-	# 	self.fail()
-	#
-	# def test_set_top(self):
-	# 	self.fail()
-
 if __name__ == '__main__':
 	unittest.main()
