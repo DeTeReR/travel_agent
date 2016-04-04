@@ -6,15 +6,15 @@ from src.die import DieOnBoard
 
 class TestDieOnBoard(TestCase):
 	def setUp(self):
-		self._die = DieOnBoard(1)
-
-	def test_top_if_move(self):
-		print self._die
-		for i in range(2, 7):
+		self._die = DieOnBoard()
+		for i in range(1, 7):
 			self._die._faces[i] = i
 
-		self._die.move('east')
-		print self._die
+	def test_top_if_move(self):
+		for direction in ['east', 'west', 'north' , 'south']:
+			for i in range(4):
+				self._die.move(direction)
+			self.assertEqual(self._die.top(), 1)
 
 	# def test_move(self):
 	# 	self.fail()

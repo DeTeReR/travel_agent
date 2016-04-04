@@ -11,16 +11,15 @@ class Face(object):
 
 
 class DieOnBoard(object):
-	NEW_TOP = {'north': 2, 'south': 0, 'east': 3, 'west': 1}
-	NEW_NORTH = {'north': 2, 'south': 0}
 
-
-	DIE_FACE_MAPPINGS = {1: (2, 3, 4, 5),
+	THING = {'north': 2, 'south': 0, 'east': 3, 'west': 1}
+	DIE_FACE_MAPPINGS = {1: (2, 3, 5, 4),
 						 2: (6, 3, 1, 4),
 						 3: (1, 2, 6, 5),
-						 4: (1, 4, 6, 2),
+						 4: (1, 5, 6, 2),
 						 5: (1, 3, 6, 4),
-						 6: (5, 4, 2, 4)}
+						 6: (5, 3, 2, 4)}
+
 	def __init__(self, top_value=None):
 		# 1 indexed so that this matches a D6.
 		self._faces = [None] + [None for i in range(6)]
@@ -29,17 +28,28 @@ class DieOnBoard(object):
 		self._north_index = 2
 
 	def top_if_move(self, direction):
-		return self._faces[self.DIE_FACE_MAPPINGS[self._top_index][self.NEW_TOP[direction]]]
+		_, new_top_index = self._roll_dir_and_new_top_index(direction)
+		return self._faces[new_top_index]
 
 	def move(self, direction):
-		self._top_index = self.DIE_FACE_MAPPINGS[self._top_index][self.NEW_TOP[direction]]
-		if direction in self.NEW_NORTH:
-			self._north_index = self.DIE_FACE_MAPPINGS[self._north_index][self.NEW_NORTH[direction]]
+		roll_dir, self._top_index = self._roll_dir_and_new_top_index(direction)
+		move_north_marker = direction in {'north', 'south'}
+		if move_north_marker:
+			self._north_index = self.DIE_FACE_MAPPINGS[self._north_index][roll_dir]
+
+	def _roll_dir_and_new_top_index(self, direction):
+		north_from_top_index = self.DIE_FACE_MAPPINGS[self._top_index].index(self._north_index)
+		roll_dir = (north_from_top_index + self.THING[direction]) % 4
+		new_top_index = self.DIE_FACE_MAPPINGS[self._top_index][roll_dir]
+		return roll_dir, new_top_index
 
 	def set_top(self, value):
 		ret = True if self._faces[self._top_index] is None else False
 		self._faces[self._top_index] = value
 		return ret
+
+	def top(self):
+		return self._faces[self._top_index]
 
 	def __str__(self):
 		neighbours = self.DIE_FACE_MAPPINGS[self._top_index]
