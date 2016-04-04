@@ -5,7 +5,6 @@ class Face(object):
 
 	def set_neighbour(self, other, neighbour_index):
 		self.neighbours[neighbour_index] = other
-		other.neighbours[(neighbour_index + 2) % 4] = self
 
 	def __str__(self):
 		return '|%s|' % self.value
@@ -14,29 +13,39 @@ class Face(object):
 class DieOnBoard(object):
 	NEW_TOP = {'north': 2, 'south': 0, 'east': 3, 'west': 1}
 	NEW_NORTH = {'north': 2, 'south': 0}
+
+
+	DIE_FACE_MAPPINGS = {1: (2, 3, 4, 5),
+						 2: (6, 3, 1, 4),
+						 3: (1, 2, 6, 5),
+						 4: (1, 4, 6, 2),
+						 5: (1, 3, 6, 4),
+						 6: (5, 4, 2, 4)}
 	def __init__(self, top_value=None):
 		# 1 indexed so that this matches a D6.
-		faces = [None] + [Face() for i in range(6)]
-		side_faces = [4, 5, 3, 2]
-		for i, n in enumerate(side_faces):
-			faces[1].set_neighbour(faces[n], i)
-			faces[6].set_neighbour(faces[n], (i + 2) % 4)
-			faces[n].set_neighbour(faces[side_faces[(i + 1) % 4]], 1)
-		self._top = faces[1]
-		self._top.value = top_value
-		self._north = faces[4]
+		self._faces = [None] + [None for i in range(6)]
+		self._top_index = 1
+		self._faces[self._top_index] = top_value
+		self._north_index = 2
 
 	def top_if_move(self, direction):
-		return self._top.neighbours[self.NEW_TOP[direction]].value
+		return self._faces[self.DIE_FACE_MAPPINGS[self._top_index][self.NEW_TOP[direction]]]
 
 	def move(self, direction):
-		self._top = self._top.neighbours[self.NEW_TOP[direction]]
-		self._north = self._north.neighbours[self.NEW_NORTH[direction]] if direction in self.NEW_NORTH else self._north
+		self._top_index = self.DIE_FACE_MAPPINGS[self._top_index][self.NEW_TOP[direction]]
+		if direction in self.NEW_NORTH:
+			self._north_index = self.DIE_FACE_MAPPINGS[self._north_index][self.NEW_NORTH[direction]]
 
 	def set_top(self, value):
-		ret = True if self._top.value is None else False
-		self._top.value = value
+		ret = True if self._faces[self._top_index] is None else False
+		self._faces[self._top_index] = value
 		return ret
 
 	def __str__(self):
-		return 'Die(top:%s, rest:%s,%s,%s,%s' % ((self._top,) + tuple(self._top.neighbours))
+		neighbours = self.DIE_FACE_MAPPINGS[self._top_index]
+		return 'Die(top:%s, neighbours:%s,%s,%s,%s)' % \
+			   (self._faces[self._top_index],
+				neighbours[0],
+				neighbours[1],
+				neighbours[2],
+				neighbours[3],)

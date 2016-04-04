@@ -1,49 +1,9 @@
-from copy import copy, deepcopy
+from copy import deepcopy
 
 import functools32 as functools32
+
 from board import Board, BoardError
-
-
-class Face(object):
-	def __init__(self, value=None):
-		self.value = value
-		self.neighbours = [None] * 4
-
-	def set_neighbour(self, other, neighbour_index):
-		self.neighbours[neighbour_index] = other
-		other.neighbours[(neighbour_index + 2) % 4] = self
-
-	def __str__(self):
-		return '|%s|' % self.value
-
-class DieOnBoard(object):
-	NEW_TOP = {'north': 2, 'south': 0, 'east': 3, 'west': 1}
-	NEW_NORTH = {'north': 2, 'south': 0}
-	def __init__(self, top_value=None):
-		# 1 indexed so that this matches a D6.
-		faces = [None] + [Face()] * 6
-		side_faces = [4, 5, 3, 2]
-		for i, n in enumerate(side_faces):
-			faces[1].set_neighbour(faces[n], i)
-			faces[6].set_neighbour(faces[n], (i + 2) % 4)
-			faces[n].set_neighbour(faces[side_faces[(i + 1) % 4]], 1)
-		self._top = faces[1]
-		self._north = faces[4]
-
-	def top_if_move(self, direction):
-		return self._top.neighbours[self.NEW_TOP[direction]].value
-
-	def move(self, direction):
-		self._top = self._top.neighbours[self.NEW_TOP[direction]]
-		self._north = self._north.neighbours[self.NEW_NORTH[direction]] if direction in self.NEW_NORTH else self._north
-
-	def set_top(self, value):
-		ret = True if self._top.value is None else False
-		self._top.value = value
-		return ret
-
-	def __str__(self):
-		return 'Die(top:%s, rest:%s,%s,%s,%s' % ((self._top) + (self._top.neighbours))
+from src.die import DieOnBoard
 
 MOVES = {
 	'north': 	(1, 0),
@@ -57,6 +17,7 @@ class State(object):
 	def __init__(self, board_values):
 		self.board = Board(board_values)
 		self._die_location = (0, 0)
+		self.board.visit(*self._die_location)
 		self.die = DieOnBoard(top_value=self.board.space(*self._die_location).value)
 
 	def __str__(self):
@@ -90,10 +51,10 @@ class State(object):
 	def new_state(self, move, value=None):
 		state = deepcopy(self)
 		state.move(move)
-		if value:
-			self.die.set_top(value)
+		if value:#
+			state.die.set_top(value)
 			try:
-				self.board.set_value(value, *self._die_location)
+				state.board.set_value(value, *self._die_location)
 			except BoardError:
 				pass
 		return state
