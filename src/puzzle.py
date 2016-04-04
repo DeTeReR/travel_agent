@@ -42,6 +42,7 @@ class State(object):
 			die_face = self.die.top_if_move(move)
 			if space.value is None:
 				if die_face is None:
+					# Do better.
 					states.extend([self.new_state(move, value) for value in SPACE_VALUES])
 				else:
 					states.append(self.new_state(move, die_face))
@@ -54,7 +55,7 @@ class State(object):
 	def new_state(self, move, value=None):
 		state = deepcopy(self)
 		state.move(move)
-		if value:#
+		if value:
 			state.die.set_top(value)
 			try:
 				state.board.set_value(value, *state._die_location)
@@ -124,13 +125,13 @@ def main():
 	])
 	practise_state = State([
 		[3, 4, 1, 7, 5],
-		[1, 2, 4, 3, 5],
-		[2, 4, 3, 6, 2],
-		[9, 5, 7, 2, 3],
+		[1, 2, 0, 3, 5],
+		[0, 4, 3, 0, 2],
+		[0, 5, 0, 2, 3],
 		[5, 0, 0, 4, 1],
 	])
 	logger.warning('Starting.')
-	logger.warning('Solved: %s', solve(big_state))
+	logger.warning('Solved: %s', solve(practise_state))
 
 if __name__ == '__main__':
 	logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
