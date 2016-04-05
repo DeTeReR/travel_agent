@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 def solve(game_static, game_state):
 	if game_state.die_location[-1] == game_static.end_location:
-		return deepcopy(game_state)
+		return game_state.score()
 	next_state_modifiers = game_static.next_state_modifiers(game_state)
 	if not next_state_modifiers:
 		return None
@@ -156,9 +156,22 @@ def main():
 		[6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3],
 		[2, 1, 6, 6, 4, 5, 2, 1, 1, 1, 7, 1]
 	])
+	medium_static = GameStatic([
+		[4, 0, 6, 4, 1, 8, 1, 4, 2, 1, 0, 3],
+		[7, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 2],
+		[1, 0, 1, 0, 6, 1, 6, 2, 0, 2, 0, 1],
+		[8, 0, 4, 0, 1, 0, 0, 8, 0, 3, 0, 5],
+		[4, 0, 2, 0, 5, 0, 0, 3, 0, 5, 0, 2],
+		[8, 0, 5, 0, 1, 1, 2, 3, 0, 4, 0, 6],
+		[6, 1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 6],
+		[3, 0, 6, 3, 6, 5, 4, 3, 4, 5, 0, 1],
+
+	])
 	practise_static = GameStatic([
 		[3, 4, 1, 7, 5],
 		[1, 2, 0, 3, 5],
+		[0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0],
 		[0, 4, 3, 0, 2],
 		[0, 5, 0, 2, 3],
 		[5, 0, 0, 4, 1],
@@ -170,7 +183,7 @@ def main():
 	                          visited=OrderedDict([((0, 0), 1)]),
 	                          die_face_values=OrderedDict([(1, static.board[0][0])]))
 	result = solve(static, initial_state)
-	logger.warning('Solved: score%s\n%s', result.score(), result)
+	logger.warning('Solved: score%s', result)#.score(), result)
 
 
 if __name__ == '__main__':
