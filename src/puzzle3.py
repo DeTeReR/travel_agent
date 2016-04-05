@@ -136,7 +136,7 @@ def main():
 		[9, 5, 7, 2, 3],
 		[5, 8, 3, 4, 1],
 	])  # 622080
-	static = big_static
+	static = medium_static
 	# static = GameStatic([[0, 0, 0]])
 
 	initial_state = GameState(die_north_index=2,
