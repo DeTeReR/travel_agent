@@ -1,11 +1,9 @@
 # ODDLY FAST but wrong?
 
 import logging
-from collections import namedtuple, OrderedDict
-from copy import copy, deepcopy
+from copy import deepcopy
 
 from die import DieOnBoard
-from functools32 import functools32
 from puzzle import MOVES
 
 logger = logging.getLogger(__name__)
@@ -35,7 +33,6 @@ class GameState(GameStateTuple):
 				tuple(self.die_top_index) == tuple(other.die_top_index) and
 				self.visited == other.visited and self.die_face_values == other.die_face_values)
 
-	@functools32.lru_cache(1)
 	def score(self):
 		product = 1
 		for die_face_index in self.visited.values():

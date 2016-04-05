@@ -1,6 +1,5 @@
 from copy import deepcopy
 import logging
-import functools32 as functools32
 
 from board import Board, BoardError
 from die import DieOnBoard
@@ -75,7 +74,6 @@ class State(object):
 	def __eq__(self, other):
 		return self.die == other.die and self.board == other.board
 
-	@functools32.lru_cache(1)
 	def score(self):
 		if self._die_location != self.board.limit():
 			return None
@@ -88,7 +86,6 @@ class State(object):
 		return self._die_location == self.board.limit()
 
 
-#@functools32.lru_cache(None)
 def solve(state):
 	if state.finished():
 		return state
