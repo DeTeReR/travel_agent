@@ -18,8 +18,10 @@ def solve(game_static, game_state):
 	solution = None
 	for modifier in next_state_modifiers:
 		game_state.modify(modifier)
-		solution = solve(game_static, game_state) if solution is None else max(solution,
-		                                                                       solve(game_static, game_state))
+		if solution is None:
+			solution = solve(game_static, game_state)
+		else:
+			solution = max(solution, solve(game_static, game_state))
 		game_state.unmod(modifier)
 	return solution
 
@@ -35,9 +37,12 @@ class GameStateTuple(object):
 
 class GameState(GameStateTuple):
 	MAIN_STATE_NAMES = ('die_north_index', 'die_top_index', 'die_location')
+
 	def modify(self, modifier):
-		for attribute_name in self.MAIN_STATE_NAMES:
-			getattr(self, attribute_name).append(getattr(modifier, attribute_name))
+		self.die_north_index.append(modifier.die_north_index)
+		self.die_top_index.append(modifier.die_top_index)
+		self.die_location.append(modifier.die_location)
+
 		row_col, die_face_index = modifier.visited
 		self.visited[row_col] = die_face_index
 		if modifier.die_face_values:
@@ -45,8 +50,9 @@ class GameState(GameStateTuple):
 			self.die_face_values[face_index] = face_value
 
 	def unmod(self, modifier):
-		for attribute_name in self.MAIN_STATE_NAMES:
-			getattr(self, attribute_name).pop()
+		self.die_north_index.pop()
+		self.die_top_index.pop()
+		self.die_location.pop()
 		self.visited.popitem()
 		if modifier.die_face_values:
 			self.die_face_values.popitem()
@@ -68,32 +74,6 @@ class GameState(GameStateTuple):
 
 class GameStateModifier(GameStateTuple):
 	pass
-
-
-'''
-	def next_states(self):
-		row, col = self._die_location
-		states = []
-		for move, (row_move, col_move) in MOVES.iteritems():
-			new_row = row + row_move
-			new_col = col + col_move
-			if not self.board.can_visit(new_row, new_col):
-				continue
-
-			space = self.board.space(new_row, new_col)
-			die_face = self.die.top_if_move(move)
-			if space.value is None:
-				if die_face is None:
-					# Do better.
-					states.extend([self.new_state(move, value) for value in SPACE_VALUES])
-				else:
-					states.append(self.new_state(move, die_face))
-			elif die_face is None:
-				states.append(self.new_state(move, space.value))
-			elif die_face == space.value:
-				states.append(self.new_state(move))
-		return states
-'''
 
 
 class GameStatic(object):
@@ -142,6 +122,13 @@ def main():
 		[9, 5, 7, 2, 3],
 		[5, 8, 3, 4, 1],
 	])
+	example_static = GameStatic([
+		[3, 4, 1, 7, 5],
+		[1, 2, 4, 3, 5],
+		[2, 4, 3, 6, 2],
+		[9, 5, 7, 2, 3],
+		[5, 8, 3, 4, 1],
+	])
 	big_static = GameStatic([
 		[1, 5, 5, 5, 6, 1, 1, 4, 1, 3, 7, 5],
 		[3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -176,7 +163,14 @@ def main():
 		[0, 5, 0, 2, 3],
 		[5, 0, 0, 4, 1],
 	])
-	static = big_static
+	static_one_zero = GameStatic([
+		[3, 4, 1, 7, 5],
+		[1, 2, 0, 3, 5],
+		[2, 4, 3, 6, 2],
+		[9, 5, 7, 2, 3],
+		[5, 8, 3, 4, 1],
+	]) # 622080
+	static = static_one_zero
 	initial_state = GameState(die_north_index=[2],
 	                          die_top_index=[1],
 	                          die_location=[(0, 0)],
