@@ -4,10 +4,15 @@ import logging
 from copy import deepcopy
 
 from die import DieOnBoard
-from puzzle import MOVES
 
 logger = logging.getLogger(__name__)
 
+MOVES = {
+	'north': 	(1, 0),
+	'south': 	(-1, 0),
+	'east': 	(0, 1),
+	'west': 	(0, -1)
+}
 
 class GameState(object):
 	def __init__(self, die_north_index=None, die_top_index=None, die_location=None, visited=None, die_face_values=None):
@@ -116,8 +121,9 @@ def main():
 		[9, 5, 7, 2, 3],
 		[5, 8, 3, 4, 1],
 	])  # 622080
+	mini_static = GameStatic([[0, 0, 0]])
+
 	static = big_static
-	# static = GameStatic([[0, 0, 0]])
 
 	initial_state = GameState(die_north_index=2,
 							  die_top_index=1,
