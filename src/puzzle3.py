@@ -142,8 +142,8 @@ def main():
 	initial_state = GameState(die_north_index=2,
 							  die_top_index=1,
 							  die_location=(0, 0),
-							  visited=OrderedDict([((0, 0), 1)]),
-							  die_face_values=OrderedDict([(1, static.board[0][0])]))
+							  visited={(0, 0): 1},
+							  die_face_values={1: static.board[0][0]})
 
 	best_solution = [None]
 
@@ -163,9 +163,9 @@ def main():
 				game_state.die_face_values[die_top_index] = new_die_face_value
 			solve(game_static, game_state)
 
-			game_state.visited.popitem()
+			del game_state.visited[die_location]
 			if new_die_face_value:
-				game_state.die_face_values.popitem()
+				del game_state.die_face_values[die_top_index]
 
 	solve(static, initial_state)
 
