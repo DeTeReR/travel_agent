@@ -54,7 +54,8 @@ class GameStatic(object):
 	def __init__(self, board_values):
 		self.board = board_values
 		self._die = DieOnBoard()
-		self.end_location = len(board_values) - 1, len(board_values[0]) - 1
+		self._end_location_row = len(board_values) - 1
+		self._end_location_col = len(board_values[0]) - 1
 
 	def next_state_modifiers(self, game_state):
 		row, col = game_state.die_location
@@ -62,7 +63,7 @@ class GameStatic(object):
 		for move, (row_move, col_move) in MOVES.iteritems():
 			new_row = row + row_move
 			new_col = col + col_move
-			if not ((self.end_location[0] >= new_row >= 0) and (self.end_location[1] >= new_col >= 0)):
+			if not ((self._end_location_row >= new_row >= 0) and (self._end_location_col >= new_col >= 0)):
 				continue
 			if (new_row, new_col) in game_state.visited:
 				continue
@@ -148,7 +149,7 @@ def main():
 	best_solution = [None]
 
 	def solve(game_static, game_state):
-		if game_state.die_location == game_static.end_location:
+		if game_state.die_location == (game_static._end_location_row, game_static._end_location_col):
 			if best_solution[0] is None or game_state.score() > best_solution[0].score():
 				best_solution[0] = deepcopy(game_state)
 		next_state_modifiers = game_static.next_state_modifiers(game_state)
