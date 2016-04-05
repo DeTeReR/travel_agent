@@ -9,7 +9,7 @@ from puzzle import MOVES
 logger = logging.getLogger(__name__)
 
 
-class GameStateTuple(object):
+class GameState(object):
 	def __init__(self, die_north_index=None, die_top_index=None, die_location=None, visited=None, die_face_values=None):
 		self.die_north_index = die_north_index
 		self.die_top_index = die_top_index
@@ -17,21 +17,8 @@ class GameStateTuple(object):
 		self.visited = visited
 		self.die_face_values = die_face_values
 
-
-class GameState(GameStateTuple):
 	def __str__(self):
 		return 'Die:%s\nScore:%s\nVisited:\n%s' % (str(self.die_face_values), self.score(), str(self.visited))
-
-	def __cmp__(self, other):
-		if other is None:
-			return 1
-		return cmp(self.score(), other.score())
-
-	def the_same_as(self, other):
-		return (tuple(self.die_location) == tuple(other.die_location) and
-				tuple(self.die_north_index) == tuple(other.die_north_index) and
-				tuple(self.die_top_index) == tuple(other.die_top_index) and
-				self.visited == other.visited and self.die_face_values == other.die_face_values)
 
 	def score(self):
 		product = 1
@@ -41,10 +28,6 @@ class GameState(GameStateTuple):
 				space_value = 9
 			product *= space_value
 		return product
-
-
-class GameStateModifier(GameStateTuple):
-	pass
 
 
 class GameStatic(object):
